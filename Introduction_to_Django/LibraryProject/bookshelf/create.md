@@ -8,5 +8,5 @@ This file demonstrates how to create a Book object in Django.
 from bookshelf.models import Book
 
 # Create a new book
-Book.objects.create(title="Sample Title", author="Sample Author", publication_year=2025)
+Book.objects.create(title="1984", author="George Orwell", publication_year=1949)
 ```
