@@ -11,5 +11,5 @@ from bookshelf.models import Book
 books = Book.objects.all()
 
 # Retrieve a single book by ID
-book = Book.objects.get(id=1)
+book = Book.objects.get(title="1984")
 ```
