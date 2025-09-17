@@ -9,7 +9,15 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
-    
+
+class meta:
+    permissions = [
+        ("can_create", "can create"),
+        ("can_view", "can view"),
+        ("can_edit", "can edith"),
+        ("can_delete", "can delete")
+    ]
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
