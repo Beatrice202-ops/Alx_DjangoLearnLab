@@ -128,3 +128,31 @@ AUTH_USER_MODEL = 'bookshelf.CustomUser'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# Enable browser XSS filter
+SECURE_BROWSER_XSS_FILTER = True
+
+# Prevent clickjacking
+X_FRAME_OPTIONS = "DENY"
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Secure cookies
+CSRF_COOKIE_SECURE =True
+SESSION_COOKIE_SECURE = True
+
+#Automatically redirects all HTTP requests to HTTPS.
+SECURE_SSL_REDIRECT = True
+
+#Instruct browsers to only use HTTPS for your site for the specified duration (1 year).
+SECURE_HSTS_SECONDS = 31536000 
+
+#Prevents attackers from exploiting insecure subdomains (like blog.yoursite.com) to bypass HTTPS.
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+#Allows your site to be included in browsers’ built-in HSTS preload lists.
+SECURE_HSTS_PRELOAD = True
+
+#Tells Django to trust the X-Forwarded-Proto header sent by the proxy.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
