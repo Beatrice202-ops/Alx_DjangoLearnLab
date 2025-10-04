@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions,filteers
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
 
@@ -72,4 +73,17 @@ urlpatterns = [
     path('books/update', UpdateView.as_view()),  # Checker requirement
     path('books/delete', DeleteView.as_view()),  # Checker requirement
 ]
+ 
+# Add filtering, search, and ordering backends
+filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # Define which fields are filterable
+filterset_fields = ['title', 'publication_year', 'author__name']
+
+    # Define searchable fields (text search)
+search_fields = ['title', 'author__name']
+
+    # Define ordering fields
+ordering_fields = ['title', 'publication_year']
+ordering = ['title']  # Default ordering
 
