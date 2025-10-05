@@ -8,9 +8,9 @@ from .views import (
 )
 
 urlpatterns = [
-    path('books/', BookListView.as_view(), name='book-list'),            # GET all books
-    path('books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),  # GET single book
-    path('books/create/', BookCreateView.as_view(), name='book-create'),    # POST new book
-    path('books/<int:pk>/update/', BookUpdateView.as_view(), name='book-update'),  # PUT/PATCH
-    path('books/<int:pk>/delete/', BookDeleteView.as_view(), name='book-delete'),  # DELETE
+    path('books/', BookListView.as_view(), name="book_list"),
+    path('books/create/', BookCreateView.as_view(), name="book_create"),
+    path('books/<int:pk>/', BookDetailView.as_view(), name="book_detail"),
+    path('books/update/<int:pk>/', BookUpdateView.as_view(), name="book_update"),
+    path('books/delete/<int:pk>/', BookDeleteView.as_view(), name="book_delete"),
 ]

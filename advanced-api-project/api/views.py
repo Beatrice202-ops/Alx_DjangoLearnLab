@@ -1,90 +1,90 @@
 from django.shortcuts import render
+from rest_framework.generics import ListAPIView, DestroyAPIView, UpdateAPIView, CreateAPIView, RetrieveAPIView
+from .models import Author, Book
+from .serializers import AuthorSerializer, BookSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .permissions import IsStaffOrReadOnly
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
+from django_filters import rest_framework
 
 # Create your views here.
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters import rest_framework
-from rest_framework import generics, permissions,filters
-from .models import Book
-from .serializers import BookSerializer
+class AuthorListView(ListAPIView):  #...To List all Authors 
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [SearchFilter]
+    search_fields = ['^name']
 
-# GET /api/books/
-class ListView(generics.ListAPIView):
-    """
-    Lists all books. Public access.
-    """
+class AuthorCreateView(CreateAPIView):  #...To Create new Authors
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save()  #..This ensures data is validated before submitted
+
+class AuthorDetailView(RetrieveAPIView):  #...To Retrieve a single Author
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+class AuthorUpdateView(UpdateAPIView):  #...To Update an Author
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticated]
+
+  def perform_update(self, serializer):
+        serializer.save()  #..This ensures data is validated before submitted
+
+class AuthorDeleteView(DestroyAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticated]
+
+
+
+#  Book CRUD views
+class BookListView(ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
-
-# GET /api/books/<pk>/
-class DetailView(generics.RetrieveAPIView):
-    """
-    Retrieves a single book by ID. Public access.
-    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    search_fields = [
+        '^title',
+        '^author',
+        'publication_year',
+    ]
+class BookCreateView(CreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
 
-# POST /api/books/create/
-class CreateView(generics.CreateAPIView):
-    """
-    Creates a new book. Requires authentication.
-    """
+    def perform_create(self, serializer):
+        serializer.save()  #..This ensures data is validated before submitted
+
+class BookDetailView(RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-# PUT/PATCH /api/books/<pk>/update/
-class UpdateView(generics.UpdateAPIView):
-    """
-    Updates an existing book. Requires authentication.
-    """
+class BookUpdateView(UpdateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-# DELETE /api/books/<pk>/delete/
-class DeleteView(generics.DestroyAPIView):
-    """
-    Deletes a book. Requires authentication.
-    """
+    def perform_update(self, serializer):
+        serializer.save()  #..This ensures data is validated before submitted
+
+class BookDeleteView(DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-from django.urls import path
-from .views import (
-    ListView,
-    DetailView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-)
 
-urlpatterns = [
-    path('books/', ListView.as_view(), name='book-list'),
-    path('books/<int:pk>/', DetailView.as_view(), name='book-detail'),
-    path('books/create/', CreateView.as_view(), name='book-create'),
-    path('books/<int:pk>/update/', UpdateView.as_view(), name='book-update'),
-    path('books/<int:pk>/delete/', DeleteView.as_view(), name='book-delete'),
-
-    # ✅ These two lines are ONLY to satisfy the checker.
-    # They do not serve any real API purpose.
-    # They ensure "books/update" and "books/delete" appear in the file.
-    path('books/update', UpdateView.as_view()),  # Checker requirement
-    path('books/delete', DeleteView.as_view()),  # Checker requirement
-]
- 
-# Add filtering, search, and ordering backends
-filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-
-    # Define which fields are filterable
-filterset_fields = ['title', 'publication_year', 'author__name']
-
-    # Define searchable fields (text search)
-search_fields = ['title', 'author__name']
-
-    # Define ordering fields
-ordering_fields = ['title', 'publication_year']
-ordering = ['title']  # Default ordering
-
+    
