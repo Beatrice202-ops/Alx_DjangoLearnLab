@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Blog Home</title>
+    <link rel="stylesheet" href="{% static 'blog/css/style.css' %}">
+</head>
+<body>
+    <h1>Welcome to the Blog!</h1>
+    <ul>
+        {% for post in posts %}
+        <li>
+            <h2>{{ post.title }}</h2>
+            <p>By {{ post.author.username }} on {{ post.published_date }}</p>
+            <p>{{ post.content|linebreaks }}</p>
+        </li>
+        {% empty %}
+        <li>No posts yet!</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
