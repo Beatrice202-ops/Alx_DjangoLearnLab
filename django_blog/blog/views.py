@@ -140,3 +140,47 @@ class CommentForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Add your comment here...'}),
         }
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import UpdateView, DeleteView, View
+from django.urls import reverse, reverse_lazy
+from django.contrib import messages
+from .models import Post, Comment
+from .forms import CommentForm
+
+class CommentCreateView(LoginRequiredMixin, View):
+    def post(self, request, post_pk):
+        post = get_object_or_404(Post, pk=post_pk)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            messages.success(request, "Comment added successfully!")
+        else:
+            messages.error(request, "Error with your comment.")
+        return redirect('post-detail', pk=post_pk)
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def get_success_url(self):
+        return reverse('post-detail', kwargs={'pk': self.object.post.pk})
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
