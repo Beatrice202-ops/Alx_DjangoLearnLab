@@ -38,3 +38,13 @@ urlpatterns += [
 
 ]
 
+from django.urls import path
+from .views import PostSearchView, PostsByTagListView
+
+urlpatterns = [
+    # existing paths
+    path('search/', PostSearchView.as_view(), name='post-search'),
+    path('tags/<slug:tag_slug>/', PostsByTagListView.as_view(), name='posts-by-tag'),
+]
+
+
