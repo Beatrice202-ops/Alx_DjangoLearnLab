@@ -47,4 +47,10 @@ urlpatterns = [
     path('tags/<slug:tag_slug>/', PostsByTagListView.as_view(), name='posts-by-tag'),
 ]
 
+from .views import PostByTagListView
+
+urlpatterns = [
+    ...
+    path('tags/<str:tag_name>/', PostByTagListView.as_view(), name='posts_by_tag'),
+]
 
