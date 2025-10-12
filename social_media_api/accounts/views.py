@@ -4,6 +4,10 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from .serializers import UserRegistrationSerializer, LoginSerializer
 from rest_framework.views import APIView
+from rest_framework import status, permissions
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
@@ -51,4 +55,57 @@ class FollowAPIView(APIView):
 
     def post(self, request):
         return Response({"message": "Follow functionality not yet implemented"})
+    
+    # accounts/views.py (append or create these views)
+
+User = get_user_model()
+
+
+class FollowUserAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        # follow user with id=user_id
+        target = get_object_or_404(User, id=user_id)
+
+        if request.user == target:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Using the existing ManyToMany: add request.user to target.followers
+        target.followers.add(request.user)
+        return Response({"detail": f"You are now following {target.username}."}, status=status.HTTP_200_OK)
+
+
+class UnfollowUserAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        # unfollow user with id=user_id
+        target = get_object_or_404(User, id=user_id)
+
+        if request.user == target:
+            return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        target.followers.remove(request.user)
+        return Response({"detail": f"You have unfollowed {target.username}."}, status=status.HTTP_200_OK)
+
+
+class FollowersListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, id=user_id)
+        # Return list of follower usernames and ids
+        data = [{"id": u.id, "username": u.username} for u in target.followers.all()]
+        return Response({"followers": data})
+
+class FollowingListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        target = get_object_or_404(User, id=user_id)
+        # 'following' is the related_name on the followers M2M, so target.following.all() are users target follows
+        data = [{"id": u.id, "username": u.username} for u in target.following.all()]
+        return Response({"following": data})
+
 
