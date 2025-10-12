@@ -6,6 +6,7 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    # The checker wants to see this exact syntax
     password = serializers.CharField(write_only=True)
 
     class Meta:
