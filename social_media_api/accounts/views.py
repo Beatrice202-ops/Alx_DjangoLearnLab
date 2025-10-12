@@ -107,5 +107,41 @@ class FollowingListAPIView(APIView):
         # 'following' is the related_name on the followers M2M, so target.following.all() are users target follows
         data = [{"id": u.id, "username": u.username} for u in target.following.all()]
         return Response({"following": data})
+    
+    # accounts/views.py
+
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import CustomUser
+
+class FollowAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        # Get all users
+        users = CustomUser.objects.all()
+        # Find the user to follow
+        user_to_follow = get_object_or_404(users, id=user_id)
+        # Prevent self-follow
+        if request.user == user_to_follow:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        # Add follow
+        request.user.following.add(user_to_follow)
+        return Response({"detail": f"You are now following {user_to_follow.username}."}, status=status.HTTP_200_OK)
+
+
+class UnfollowAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        # Get all users
+        users = CustomUser.objects.all()
+        # Find the user to unfollow
+        user_to_unfollow = get_object_or_404(users, id=user_id)
+        # Remove follow
+        request.user.following.remove(user_to_unfollow)
+        return Response({"detail": f"You have unfollowed {user_to_unfollow.username}."}, status=status.HTTP_200_OK)
+
 
 
