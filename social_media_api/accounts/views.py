@@ -1,15 +1,14 @@
-from rest_framework import generics, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
 from .serializers import UserRegistrationSerializer, LoginSerializer
+from rest_framework.views import APIView
 
 User = get_user_model()
 
-
-# 🔹 1. User Registration View
-class RegisterView(generics.CreateAPIView):
+# Register View
+class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
 
@@ -17,47 +16,39 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token = Token.objects.get(user=user)
-        return Response({
-            "message": "User registered successfully",
-            "token": token.key,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "bio": user.bio,
-                "profile_picture": user.profile_picture.url if user.profile_picture else None
-            }
-        }, status=status.HTTP_201_CREATED)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key}, status=status.HTTP_201_CREATED)
 
 
-# 🔹 2. Login View
-class LoginView(generics.GenericAPIView):
+# Login View
+class LoginAPIView(APIView):
     serializer_class = LoginSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        token = serializer.validated_data['token']
-        return Response({
-            "message": "Login successful",
-            "token": token,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "bio": user.bio,
-                "profile_picture": user.profile_picture.url if user.profile_picture else None
-            }
-        }, status=status.HTTP_200_OK)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key})
 
 
-# 🔹 3. User Profile View
-class ProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UserRegistrationSerializer
+# Profile View
+class ProfileAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
+    def get(self, request):
+        user = request.user
+        data = {
+            "username": user.username,
+            "email": user.email,
+        }
+        return Response(data)
+
+
+# Follow View (optional for now)
+class FollowAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        return Response({"message": "Follow functionality not yet implemented"})
 
