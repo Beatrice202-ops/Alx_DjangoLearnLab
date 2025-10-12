@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from .models import CustomUser
+from .serializers import UserSerializer
 
 
 User = get_user_model()
@@ -89,8 +91,6 @@ class UnfollowUserAPIView(APIView):
         target.followers.remove(request.user)
         return Response({"detail": f"You have unfollowed {target.username}."}, status=status.HTTP_200_OK)
 
-
-class FollowersListAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, user_id):
@@ -130,6 +130,14 @@ class FollowAPIView(generics.GenericAPIView):
         request.user.following.add(user_to_follow)
         return Response({"detail": f"You are now following {user_to_follow.username}."}, status=status.HTTP_200_OK)
 
+        Notification.objects.create(
+        recipient=target,
+        actor=request.user,
+        verb='started following you',
+        target_content_type=ContentType.objects.get_for_model(request.user),
+        target_object_id=str(request.user.pk)
+    )
+
 
 class UnfollowAPIView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -143,5 +151,12 @@ class UnfollowAPIView(generics.GenericAPIView):
         request.user.following.remove(user_to_unfollow)
         return Response({"detail": f"You have unfollowed {user_to_unfollow.username}."}, status=status.HTTP_200_OK)
 
+class FollowersListAPIView(generics.ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer  # use your existing user serializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        return user.followers.all()
 
